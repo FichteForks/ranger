@@ -5,6 +5,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import codecs
 from logging import getLogger
 import locale
 import os.path
@@ -72,19 +73,16 @@ def main(
             return 1
         fm = FM()
         try:
-            if sys.version_info[0] >= 3:
-                fobj = open(fm.datapath('tagged'), 'r', errors='replace')
-            else:
-                fobj = open(fm.datapath('tagged'), 'r')
+            with codecs.open(fm.datapath('tagged'), 'r', errors='replace') as fobj:
+                for line in fobj.readlines():
+                    if len(line) > 2 and line[1] == ':':
+                        if line[0] in args.list_tagged_files:
+                            sys.stdout.write(line[2:])
+                    elif line and '*' in args.list_tagged_files:
+                        sys.stdout.write(line)
         except OSError as ex:
             print('Unable to open `tagged` data file: {0}'.format(ex), file=sys.stderr)
             return 1
-        for line in fobj.readlines():
-            if len(line) > 2 and line[1] == ':':
-                if line[0] in args.list_tagged_files:
-                    sys.stdout.write(line[2:])
-            elif line and '*' in args.list_tagged_files:
-                sys.stdout.write(line)
         return 0
 
     SettingsAware.settings_set(Settings())
