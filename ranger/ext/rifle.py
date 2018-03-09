@@ -160,22 +160,21 @@ class Rifle(object):  # pylint: disable=too-many-instance-attributes
         """Replace the current configuration with the one in config_file"""
         if config_file is None:
             config_file = self.config_file
-        fobj = open(config_file, 'r')
-        self.rules = []
-        lineno = 0
-        for line in fobj:
-            lineno += 1
-            line = line.strip()
-            if line.startswith('#') or line == '':
-                continue
-            if self.delimiter1 not in line:
-                raise ValueError("Line without delimiter")
-            tests, command = line.split(self.delimiter1, 1)
-            tests = tests.split(self.delimiter2)
-            tests = tuple(tuple(f.strip().split(None, 1)) for f in tests)
-            command = command.strip()
-            self.rules.append((command, tests))
-        fobj.close()
+        with open(config_file, 'r') as fobj:
+            self.rules = []
+            lineno = 0
+            for line in fobj:
+                lineno += 1
+                line = line.strip()
+                if line.startswith('#') or line == '':
+                    continue
+                if self.delimiter1 not in line:
+                    raise ValueError("Line without delimiter")
+                tests, command = line.split(self.delimiter1, 1)
+                tests = tests.split(self.delimiter2)
+                tests = tuple(tuple(f.strip().split(None, 1)) for f in tests)
+                command = command.strip()
+                self.rules.append((command, tests))
 
     def _eval_condition(self, condition, files, label):
         # Handle the negation of conditions starting with an exclamation mark,

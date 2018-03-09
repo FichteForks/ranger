@@ -5,9 +5,9 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import codecs
 from os.path import isdir, exists, dirname, abspath, realpath, expanduser, sep
 import string
-import sys
 
 ALLOWED_KEYS = string.ascii_letters + string.digits + string.punctuation
 
@@ -20,7 +20,8 @@ class Tags(object):
         self._filename = realpath(abspath(expanduser(filename)))
 
         if isdir(dirname(self._filename)) and not exists(self._filename):
-            open(self._filename, 'w')
+            with open(self._filename, 'w'):
+                pass
 
         self.sync()
 
@@ -71,16 +72,8 @@ class Tags(object):
         return self.default_tag
 
     def sync(self):
-        try:
-            if sys.version_info[0] >= 3:
-                fobj = open(self._filename, 'r', errors='replace')
-            else:
-                fobj = open(self._filename, 'r')
-        except OSError:
-            pass
-        else:
+        with codecs.open(self._filename, 'r', errors='replace') as fobj:
             self.tags = self._parse(fobj)
-            fobj.close()
 
     def dump(self):
         try:

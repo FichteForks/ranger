@@ -791,15 +791,15 @@ class load_copy_buffer(Command):
         fname = self.fm.datapath(self.copy_buffer_filename)
         unreadable = IOError if sys.version_info[0] < 3 else OSError
         try:
-            fobj = open(fname, 'r')
+            with open(fname, 'r') as fobj:
+                self.fm.copy_buffer = set(File(g)
+                                          for g in fobj.read().split("\n")
+                                          if exists(g))
         except unreadable:
             return self.fm.notify(
                 "Cannot open %s" % (fname or self.copy_buffer_filename), bad=True)
-
-        self.fm.copy_buffer = set(File(g)
-                                  for g in fobj.read().split("\n") if exists(g))
-        fobj.close()
-        self.fm.ui.redraw_main_column()
+        else:
+            self.fm.ui.redraw_main_column()
         return None
 
 
@@ -816,12 +816,11 @@ class save_copy_buffer(Command):
         fname = self.fm.datapath(self.copy_buffer_filename)
         unwritable = IOError if sys.version_info[0] < 3 else OSError
         try:
-            fobj = open(fname, 'w')
+            with open(fname, 'w') as fobj:
+                fobj.write("\n".join(fobj.path for fobj in self.fm.copy_buffer))
         except unwritable:
             return self.fm.notify("Cannot open %s" %
                                   (fname or self.copy_buffer_filename), bad=True)
-        fobj.write("\n".join(fobj.path for fobj in self.fm.copy_buffer))
-        fobj.close()
         return None
 
 
@@ -865,7 +864,8 @@ class touch(Command):
 
         fname = join(self.fm.thisdir.path, expanduser(self.rest(1)))
         if not lexists(fname):
-            open(fname, 'a').close()
+            with open(fname, 'a'):
+                pass
         else:
             self.fm.notify("file/directory exists!", bad=True)
 

@@ -365,8 +365,8 @@ def load_settings(  # pylint: disable=too-many-locals,too-many-branches,too-many
                        if p.endswith('.py') and not p.startswith('_')]
             if not os.path.exists(fm.confpath('plugins', '__init__.py')):
                 LOG.debug("Creating missing '__init__.py' file in plugin folder")
-                fobj = open(fm.confpath('plugins', '__init__.py'), 'w')
-                fobj.close()
+                with open(fm.confpath('plugins', '__init__.py'), 'w'):
+                    pass
 
             ranger.fm = fm
             for plugin in sorted(plugins):
